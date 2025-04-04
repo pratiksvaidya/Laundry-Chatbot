@@ -13,21 +13,17 @@ import {
 } from '../utils/localStorage';
 
 const ChatbotContainer = () => {
-	// Reference to track if the component is mounted
 	const isMounted = useRef(true);
 
-	// Effect to clean up when component unmounts
 	useEffect(() => {
 		return () => {
 			isMounted.current = false;
 		};
 	}, []);
 
-	// Define the flow for the chatbot
 	const flow = {
 		start: {
 			message: async (params) => {
-				// Inject the welcome message but don't save it to conversation history
 				await params.injectMessage(
 					"Hello! Welcome to Pratik's Wild Wash's virtual assistant. How can I help you today?",
 				);
@@ -38,8 +34,6 @@ const ChatbotContainer = () => {
 			message: async (params) => {
 				try {
 					let messages = [];
-
-					console.log('params', params);
 
 					const storedHistory = getConversationHistory();
 
@@ -72,32 +66,15 @@ const ChatbotContainer = () => {
 
 					const aiMessage = await sendMessageToOpenAI(messages);
 
-					if (aiMessage.escalationDetails) {
-						console.log('Escalation data:', aiMessage.escalationDetails);
+					const botMessage = {
+						content: aiMessage.content,
+						sender: 'bot',
+						timestamp: new Date().toISOString(),
+					};
 
-						//const result = await escalateToSupport(escalationData);
+					saveConversationHistory([...getConversationHistory(), botMessage]);
 
-						const escalationMessage = `Thank you, ${aiMessage.escalationDetails.firstName}. Your request has been escalated to our team. We'll contact you at the phone number you provided (${aiMessage.escalationDetails.phoneNumber}) as soon as possible.`;
-
-						const botMessage = {
-							content: aiMessage.content | 'Escalated',
-							sender: 'bot',
-							timestamp: new Date().toISOString(),
-						};
-						saveConversationHistory([...getConversationHistory(), botMessage]);
-
-						await params.injectMessage(escalationMessage);
-					} else {
-						const botMessage = {
-							content: aiMessage.content,
-							sender: 'bot',
-							timestamp: new Date().toISOString(),
-						};
-
-						saveConversationHistory([...getConversationHistory(), botMessage]);
-
-						await params.injectMessage(botMessage.content);
-					}
+					await params.injectMessage(botMessage.content);
 				} catch (error) {
 					console.error('Error calling OpenAI:', error);
 					await params.injectMessage(
@@ -109,7 +86,6 @@ const ChatbotContainer = () => {
 		},
 	};
 
-	// Custom settings for the chatbot
 	const chatbotSettings = {
 		...getDefaultSettings(),
 		general: {
@@ -132,7 +108,6 @@ const ChatbotContainer = () => {
 		},
 	};
 
-	// Custom styling for the chatbot
 	const chatbotStyles = {
 		...getDefaultStyles(),
 		chatContainer: {
