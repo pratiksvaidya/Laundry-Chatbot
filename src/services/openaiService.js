@@ -1,3 +1,5 @@
+const BE_ENDPOINT_URL = 'http://localhost:5001/api/v1/duda/en/155/chatbot';
+
 export const sendMessageToOpenAI = async (messages) => {
 	if (!Array.isArray(messages)) {
 		console.error('Messages is not an array:', messages);
@@ -25,18 +27,15 @@ export const sendMessageToOpenAI = async (messages) => {
 			.filter((msg) => msg !== null),
 	];
 
-	const response = await fetch(
-		'http://localhost:5001/api/v1/duda/en/155/chatbot',
-		{
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify({
-				messages: formattedMessages,
-			}),
+	const response = await fetch(BE_ENDPOINT_URL, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
 		},
-	);
+		body: JSON.stringify({
+			messages: formattedMessages,
+		}),
+	});
 
 	return response.json();
 };
